@@ -1,0 +1,167 @@
+<?php
+/**
+ * Admin Settings Page Template
+ *
+ * @package WP_Blocks_To_Category
+ */
+
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
+
+<div class="wrap">
+    <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+
+    <div class="wpbtc-container">
+        <div class="wpbtc-notice" id="wpbtc-notice" style="display:none;"></div>
+
+        <div class="wpbtc-settings-card">
+            <h2><?php _e('General Settings', 'wp-blocks-to-category'); ?></h2>
+
+            <table class="form-table">
+                <tr>
+                    <th scope="row">
+                        <label for="remove_categories_on_block_removal">
+                            <?php _e('Remove Categories on Block Removal', 'wp-blocks-to-category'); ?>
+                        </label>
+                    </th>
+                    <td>
+                        <label>
+                            <input
+                                type="checkbox"
+                                id="remove_categories_on_block_removal"
+                                name="remove_categories_on_block_removal"
+                                value="1"
+                                <?php checked($settings['remove_categories_on_block_removal'], true); ?>
+                            />
+                            <?php _e('Automatically remove assigned categories when the block is removed from a post', 'wp-blocks-to-category'); ?>
+                        </label>
+                        <p class="description">
+                            <?php _e('When enabled, if a post no longer contains a block, the categories that were assigned due to that block will be removed. Other categories will remain unchanged.', 'wp-blocks-to-category'); ?>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="wpbtc-settings-card">
+            <h2><?php _e('Block to Category Mappings', 'wp-blocks-to-category'); ?></h2>
+            <p class="description">
+                <?php _e('Select one or more categories for each block. When a post contains a block, it will automatically be assigned the selected categories.', 'wp-blocks-to-category'); ?>
+            </p>
+
+            <div class="wpbtc-filter-section">
+                <input
+                    type="text"
+                    id="wpbtc-block-search"
+                    class="regular-text"
+                    placeholder="<?php esc_attr_e('Search blocks...', 'wp-blocks-to-category'); ?>"
+                />
+            </div>
+
+            <div class="wpbtc-mappings-container">
+                <?php if (empty($registered_blocks)) : ?>
+                    <p><?php _e('No blocks found. Make sure you have the block editor enabled.', 'wp-blocks-to-category'); ?></p>
+                <?php else : ?>
+                    <table class="wp-list-table widefat fixed striped wpbtc-mappings-table">
+                        <thead>
+                            <tr>
+                                <th class="wpbtc-col-block"><?php _e('Block', 'wp-blocks-to-category'); ?></th>
+                                <th class="wpbtc-col-name"><?php _e('Block Name', 'wp-blocks-to-category'); ?></th>
+                                <th class="wpbtc-col-categories"><?php _e('Assigned Categories', 'wp-blocks-to-category'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="wpbtc-mappings-tbody">
+                            <?php
+                            // Sort blocks by name
+                            $blocks_array = array();
+                            foreach ($registered_blocks as $block_name => $block_type) {
+                                $blocks_array[] = array(
+                                    'name' => $block_name,
+                                    'title' => isset($block_type->title) ? $block_type->title : $block_name
+                                );
+                            }
+
+                            usort($blocks_array, function($a, $b) {
+                                return strcmp($a['name'], $b['name']);
+                            });
+
+                            foreach ($blocks_array as $block) :
+                                $block_name = $block['name'];
+                                $block_title = $block['title'];
+                                $assigned_categories = isset($mappings[$block_name]) ? $mappings[$block_name] : array();
+                            ?>
+                                <tr class="wpbtc-mapping-row" data-block-name="<?php echo esc_attr($block_name); ?>" data-block-title="<?php echo esc_attr($block_title); ?>">
+                                    <td class="wpbtc-col-block">
+                                        <div class="wpbtc-block-icon">
+                                            <span class="dashicons dashicons-block-default"></span>
+                                        </div>
+                                    </td>
+                                    <td class="wpbtc-col-name">
+                                        <strong><?php echo esc_html($block_title); ?></strong>
+                                        <br>
+                                        <code class="wpbtc-block-name"><?php echo esc_html($block_name); ?></code>
+                                    </td>
+                                    <td class="wpbtc-col-categories">
+                                        <select
+                                            name="wpbtc_mappings[<?php echo esc_attr($block_name); ?>][]"
+                                            class="wpbtc-category-select"
+                                            multiple="multiple"
+                                            data-block="<?php echo esc_attr($block_name); ?>"
+                                            style="width: 100%; min-height: 100px;"
+                                        >
+                                            <?php foreach ($categories as $category) : ?>
+                                                <option
+                                                    value="<?php echo esc_attr($category->term_id); ?>"
+                                                    <?php selected(in_array($category->term_id, $assigned_categories)); ?>
+                                                >
+                                                    <?php echo esc_html($category->name); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <p class="description">
+                                            <?php
+                                            $count = count($assigned_categories);
+                                            if ($count > 0) {
+                                                printf(
+                                                    _n('%d category assigned', '%d categories assigned', $count, 'wp-blocks-to-category'),
+                                                    $count
+                                                );
+                                            } else {
+                                                _e('No categories assigned', 'wp-blocks-to-category');
+                                            }
+                                            ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div class="wpbtc-no-results" style="display:none;">
+                        <p><?php _e('No blocks found matching your search.', 'wp-blocks-to-category'); ?></p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="wpbtc-actions">
+            <button type="button" class="button button-primary button-large" id="wpbtc-save-settings">
+                <?php _e('Save Settings', 'wp-blocks-to-category'); ?>
+            </button>
+            <span class="spinner" id="wpbtc-spinner"></span>
+        </div>
+
+        <div class="wpbtc-info-card">
+            <h3><?php _e('How it works', 'wp-blocks-to-category'); ?></h3>
+            <ol>
+                <li><?php _e('Select categories for each block type above', 'wp-blocks-to-category'); ?></li>
+                <li><?php _e('When a post is created or edited with those blocks, the selected categories will be automatically assigned', 'wp-blocks-to-category'); ?></li>
+                <li><?php _e('Existing categories on the post are preserved (categories are added, not replaced)', 'wp-blocks-to-category'); ?></li>
+                <li><?php _e('If enabled, categories can be automatically removed when blocks are removed from posts', 'wp-blocks-to-category'); ?></li>
+            </ol>
+        </div>
+    </div>
+</div>
