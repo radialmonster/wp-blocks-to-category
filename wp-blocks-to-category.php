@@ -80,6 +80,9 @@ class WP_Blocks_To_Category {
         add_action('wp_ajax_wpbtc_save_mappings', array($this, 'ajax_save_mappings'));
         add_action('wp_ajax_wpbtc_get_blocks', array($this, 'ajax_get_blocks'));
         add_action('wp_ajax_wpbtc_process_existing_posts', array($this, 'ajax_process_existing_posts'));
+
+        // Plugin action links
+        add_filter('plugin_action_links_' . WPBTC_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
     /**
@@ -93,6 +96,19 @@ class WP_Blocks_To_Category {
             'wp-blocks-to-category',
             array($this, 'render_settings_page')
         );
+    }
+
+    /**
+     * Add Settings link to plugin action links
+     */
+    public function add_plugin_action_links($links) {
+        $settings_link = sprintf(
+            '<a href="%s">%s</a>',
+            admin_url('options-general.php?page=wp-blocks-to-category'),
+            __('Settings', 'wp-blocks-to-category')
+        );
+        array_unshift($links, $settings_link);
+        return $links;
     }
 
     /**
