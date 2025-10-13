@@ -81,6 +81,7 @@ class WP_Blocks_To_Category {
         // AJAX handlers
         add_action('wp_ajax_wpbtc_save_mappings', array($this, 'ajax_save_mappings'));
         add_action('wp_ajax_wpbtc_get_blocks', array($this, 'ajax_get_blocks'));
+        add_action('wp_ajax_wpbtc_process_existing_posts', array($this, 'ajax_process_existing_posts'));
     }
 
     /**
@@ -226,6 +227,111 @@ class WP_Blocks_To_Category {
             return;
         }
 
+        // Process categories for this post
+        $this->process_post_categories($post_id, $post);
+    }
+
+    /**
+     * Recursively extract block names from parsed blocks
+     */
+    private function extract_block_names($blocks) {
+        $block_names = array();
+
+        foreach ($blocks as $block) {
+            if (!empty($block['blockName'])) {
+                $block_names[] = $block['blockName'];
+            }
+
+            // Check for inner blocks
+            if (!empty($block['innerBlocks'])) {
+                $inner_block_names = $this->extract_block_names($block['innerBlocks']);
+                $block_names = array_merge($block_names, $inner_block_names);
+            }
+        }
+
+        return array_unique($block_names);
+    }
+
+    /**
+     * Get plugin mappings
+     */
+    public static function get_mappings() {
+        return get_option(self::OPTION_MAPPINGS, array());
+    }
+
+    /**
+     * Get plugin settings
+     */
+    public static function get_settings() {
+        return get_option(self::OPTION_SETTINGS, array(
+            'remove_categories_on_block_removal' => false
+        ));
+    }
+
+    /**
+     * AJAX handler to process existing posts
+     */
+    public function ajax_process_existing_posts() {
+        check_ajax_referer('wpbtc_ajax_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'wp-blocks-to-category')));
+            return;
+        }
+
+        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+        $batch_size = 10; // Process 10 posts at a time
+
+        // Get posts
+        $args = array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => $batch_size,
+            'offset' => $offset,
+            'orderby' => 'ID',
+            'order' => 'ASC'
+        );
+
+        $query = new WP_Query($args);
+        $total_posts = $query->found_posts;
+        $processed = 0;
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $post_id = get_the_ID();
+                $post = get_post($post_id);
+
+                // Process this post using the same logic as on_post_save
+                $this->process_post_categories($post_id, $post);
+                $processed++;
+            }
+            wp_reset_postdata();
+        }
+
+        $total = wp_count_posts('post')->publish;
+        $completed = $offset + $processed;
+        $remaining = $total - $completed;
+
+        wp_send_json_success(array(
+            'processed' => $processed,
+            'total' => $total,
+            'completed' => $completed,
+            'remaining' => $remaining,
+            'continue' => $remaining > 0,
+            'message' => sprintf(
+                __('Processed %d of %d posts...', 'wp-blocks-to-category'),
+                $completed,
+                $total
+            )
+        ));
+    }
+
+    /**
+     * Process post categories based on blocks
+     * Extracted from on_post_save for reusability
+     */
+    private function process_post_categories($post_id, $post) {
         // Get the post content
         $content = $post->post_content;
 
@@ -277,43 +383,6 @@ class WP_Blocks_To_Category {
         if ($new_categories !== $current_categories) {
             wp_set_post_categories($post_id, $new_categories);
         }
-    }
-
-    /**
-     * Recursively extract block names from parsed blocks
-     */
-    private function extract_block_names($blocks) {
-        $block_names = array();
-
-        foreach ($blocks as $block) {
-            if (!empty($block['blockName'])) {
-                $block_names[] = $block['blockName'];
-            }
-
-            // Check for inner blocks
-            if (!empty($block['innerBlocks'])) {
-                $inner_block_names = $this->extract_block_names($block['innerBlocks']);
-                $block_names = array_merge($block_names, $inner_block_names);
-            }
-        }
-
-        return array_unique($block_names);
-    }
-
-    /**
-     * Get plugin mappings
-     */
-    public static function get_mappings() {
-        return get_option(self::OPTION_MAPPINGS, array());
-    }
-
-    /**
-     * Get plugin settings
-     */
-    public static function get_settings() {
-        return get_option(self::OPTION_SETTINGS, array(
-            'remove_categories_on_block_removal' => false
-        ));
     }
 }
 

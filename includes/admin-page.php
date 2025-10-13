@@ -154,6 +154,40 @@ if (!defined('ABSPATH')) {
             <span class="spinner" id="wpbtc-spinner"></span>
         </div>
 
+        <div class="wpbtc-settings-card wpbtc-bulk-process-card">
+            <h2><?php _e('Process Existing Posts', 'wp-blocks-to-category'); ?></h2>
+            <p class="description">
+                <?php _e('Apply the current block-to-category mappings to all existing published posts. This is useful when you first install the plugin or change your mappings.', 'wp-blocks-to-category'); ?>
+            </p>
+
+            <?php
+            $post_count = wp_count_posts('post')->publish;
+            ?>
+
+            <div class="wpbtc-bulk-process-info">
+                <p>
+                    <strong><?php printf(_n('%d published post', '%d published posts', $post_count, 'wp-blocks-to-category'), $post_count); ?></strong>
+                </p>
+                <p class="description">
+                    <?php _e('This will process all published posts and assign categories based on the blocks they contain. Existing categories will be preserved.', 'wp-blocks-to-category'); ?>
+                </p>
+            </div>
+
+            <div class="wpbtc-bulk-actions">
+                <button type="button" class="button button-secondary button-large" id="wpbtc-process-existing">
+                    <?php _e('Process All Existing Posts', 'wp-blocks-to-category'); ?>
+                </button>
+                <span class="spinner" id="wpbtc-process-spinner"></span>
+            </div>
+
+            <div class="wpbtc-progress-container" id="wpbtc-progress-container" style="display:none;">
+                <div class="wpbtc-progress-bar">
+                    <div class="wpbtc-progress-fill" id="wpbtc-progress-fill"></div>
+                </div>
+                <p class="wpbtc-progress-text" id="wpbtc-progress-text"></p>
+            </div>
+        </div>
+
         <div class="wpbtc-info-card">
             <h3><?php _e('How it works', 'wp-blocks-to-category'); ?></h3>
             <ol>

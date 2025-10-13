@@ -191,3 +191,66 @@
 .wpbtc-settings-card .form-table td {
     padding-right: 0;
 }
+
+/* Bulk processing styles */
+.wpbtc-bulk-process-card {
+    border-left: 4px solid #f0b849;
+}
+
+.wpbtc-bulk-process-info {
+    margin: 15px 0;
+}
+
+.wpbtc-bulk-actions {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#wpbtc-process-spinner {
+    float: none;
+    margin: 0;
+}
+
+#wpbtc-process-spinner.is-active {
+    visibility: visible;
+}
+
+.wpbtc-progress-container {
+    margin-top: 20px;
+}
+
+.wpbtc-progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #f0f0f1;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.wpbtc-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1 0%, #135e96 100%);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 500;
+}
+
+.wpbtc-progress-text {
+    margin-top: 10px;
+    font-weight: 500;
+    color: #2c3338;
+}
+
+/* Responsive styles for bulk processing */
+@media screen and (max-width: 782px) {
+    .wpbtc-bulk-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

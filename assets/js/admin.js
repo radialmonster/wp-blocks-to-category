@@ -30,6 +30,9 @@
 
             // Track changes to category selects
             $('.wpbtc-category-select').on('change', this.updateCategoryCount.bind(this));
+
+            // Process existing posts button
+            $('#wpbtc-process-existing').on('click', this.processExistingPosts.bind(this));
         },
 
         /**
@@ -158,6 +161,93 @@
                     $notice.fadeOut();
                 }, 5000);
             }
+        },
+
+        /**
+         * Process existing posts in batches
+         */
+        processExistingPosts: function(e) {
+            e.preventDefault();
+
+            var $button = $('#wpbtc-process-existing');
+            var $spinner = $('#wpbtc-process-spinner');
+            var $progressContainer = $('#wpbtc-progress-container');
+            var $progressFill = $('#wpbtc-progress-fill');
+            var $progressText = $('#wpbtc-progress-text');
+
+            // Confirm before processing
+            if (!confirm('This will process all existing published posts and assign categories based on their blocks. Continue?')) {
+                return;
+            }
+
+            // Show loading state
+            $button.prop('disabled', true);
+            $spinner.addClass('is-active');
+            $progressContainer.show();
+            $progressFill.css('width', '0%');
+            $progressText.text('Starting...');
+
+            // Start processing from offset 0
+            this.processPostsBatch(0, $button, $spinner, $progressContainer, $progressFill, $progressText);
+        },
+
+        /**
+         * Process a batch of posts recursively
+         */
+        processPostsBatch: function(offset, $button, $spinner, $progressContainer, $progressFill, $progressText) {
+            $.ajax({
+                url: wpbtc_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'wpbtc_process_existing_posts',
+                    nonce: wpbtc_ajax.nonce,
+                    offset: offset
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var data = response.data;
+
+                        // Update progress
+                        var percentage = (data.completed / data.total) * 100;
+                        $progressFill.css('width', percentage + '%');
+                        $progressText.text(data.message);
+
+                        // Continue processing if there are more posts
+                        if (data.continue) {
+                            WPBTC_Admin.processPostsBatch(
+                                data.completed,
+                                $button,
+                                $spinner,
+                                $progressContainer,
+                                $progressFill,
+                                $progressText
+                            );
+                        } else {
+                            // All done
+                            $progressText.text('Complete! Processed ' + data.total + ' posts.');
+                            WPBTC_Admin.showNotice('Successfully processed all posts!', 'success');
+
+                            // Reset UI after delay
+                            setTimeout(function() {
+                                $button.prop('disabled', false);
+                                $spinner.removeClass('is-active');
+                                $progressContainer.fadeOut();
+                            }, 2000);
+                        }
+                    } else {
+                        WPBTC_Admin.showNotice(response.data.message || 'An error occurred', 'error');
+                        $button.prop('disabled', false);
+                        $spinner.removeClass('is-active');
+                        $progressContainer.hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    WPBTC_Admin.showNotice('Failed to process posts: ' + error, 'error');
+                    $button.prop('disabled', false);
+                    $spinner.removeClass('is-active');
+                    $progressContainer.hide();
+                }
+            });
         }
     };
 
