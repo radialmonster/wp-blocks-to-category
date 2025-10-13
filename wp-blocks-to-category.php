@@ -1,17 +1,15 @@
 <?php
 /**
  * Plugin Name: WP Blocks to Category
- * Plugin URI: https://github.com/yourusername/wp-blocks-to-category
+ * Plugin URI: https://github.com/radialmonster/wp-blocks-to-category
  * Description: Automatically assign categories to posts based on the blocks they contain. Configure block-to-category mappings in Settings > WP Blocks to Category.
  * Version: 1.0.0
- * Author: Your Name
- * Author URI: https://yourwebsite.com
- * License: GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Author: RadialMonster
  * Text Domain: wp-blocks-to-category
- * Domain Path: /languages
  * Requires at least: 5.8
  * Requires PHP: 7.4
+ * GitHub Plugin URI: radialmonster/wp-blocks-to-category
+ * Primary Branch: main
  */
 
 // Exit if accessed directly
