@@ -75,21 +75,7 @@ if (!defined('ABSPATH')) {
                         </thead>
                         <tbody id="wpbtc-mappings-tbody">
                             <?php
-                            // Sort blocks by name
-                            $blocks_array = array();
-                            foreach ($registered_blocks as $block_name => $block_type) {
-                                $blocks_array[] = array(
-                                    'name' => $block_name,
-                                    'title' => isset($block_type->title) ? $block_type->title : $block_name,
-                                    'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
-                                );
-                            }
-
-                            usort($blocks_array, function($a, $b) {
-                                return strcmp($a['name'], $b['name']);
-                            });
-
-                            foreach ($blocks_array as $block) :
+                            foreach ($blocks_for_page as $block) :
                                 $block_name = $block['name'];
                                 $block_title = $block['title'];
                                 $block_icon = $block['icon'];
