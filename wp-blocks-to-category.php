@@ -170,10 +170,25 @@ class WP_Blocks_To_Category {
         $blocks_for_page = array();
 
         foreach ($registered_blocks as $block_name => $block_type) {
+            if ($block_name === 'core/archives') {
+                echo '<pre>';
+                print_r($block_type);
+                echo '</pre>';
+            }
+
+            $icon = 'dashicons-block-default';
+            if (isset($block_type->icon)) {
+                if (is_string($block_type->icon)) {
+                    $icon = $block_type->icon;
+                } elseif (is_array($block_type->icon) && isset($block_type->icon['src'])) {
+                    $icon = $block_type->icon['src'];
+                }
+            }
+
             $blocks_for_page[] = array(
                 'name' => $block_name,
                 'title' => isset($block_type->title) ? $block_type->title : $block_name,
-                'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
+                'icon' => $icon
             );
         }
 
