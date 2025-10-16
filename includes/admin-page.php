@@ -85,7 +85,7 @@ if (!defined('ABSPATH')) {
                             }
 
                             usort($blocks_array, function($a, $b) {
-                                return strcmp($a['name'], $b['name']);
+                                return strcasecmp($a['title'], $b['title']);
                             });
 
                             foreach ($blocks_array as $block) :
