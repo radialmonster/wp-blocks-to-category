@@ -167,6 +167,17 @@ class WP_Blocks_To_Category {
         // Get all registered blocks
         $registered_blocks = WP_Block_Type_Registry::get_instance()->get_all_registered();
 
+        // Add embed variations
+        $embed_variations = $this->get_embed_variations();
+        foreach ($embed_variations as $variation_slug => $variation_name) {
+            $block_name = 'core/embed:' . $variation_slug;
+            $registered_blocks[$block_name] = (object) array(
+                'name' => $block_name,
+                'title' => $variation_name . ' Embed',
+                'icon' => $this->get_embed_variation_icon($variation_slug)
+            );
+        }
+
         // Get all categories
         $categories = get_categories(array(
             'hide_empty' => false,
@@ -175,6 +186,92 @@ class WP_Blocks_To_Category {
         ));
 
         include WPBTC_PLUGIN_DIR . 'includes/admin-page.php';
+    }
+
+    /**
+     * Get the icon for a specific embed variation
+     */
+    private function get_embed_variation_icon($slug) {
+        $icons = array(
+            'youtube' => 'dashicons-youtube',
+            'vimeo' => 'dashicons-vimeo',
+            'facebook' => 'dashicons-facebook',
+            'twitter' => 'dashicons-twitter',
+            'instagram' => 'dashicons-instagram',
+            'soundcloud' => 'dashicons-soundcloud',
+            'spotify' => 'dashicons-spotify',
+            'flickr' => 'dashicons-format-image',
+            'imgur' => 'dashicons-format-image',
+            'dailymotion' => 'dashicons-video-alt3',
+            'ted' => 'dashicons-video-alt3',
+            'kickstarter' => 'dashicons-megaphone',
+            'meetup-com' => 'dashicons-groups',
+            'mixcloud' => 'dashicons-playlist-audio',
+            'reddit' => 'dashicons-reddit',
+            'reverbnation' => 'dashicons-format-audio',
+            'screencast' => 'dashicons-video-alt3',
+            'scribd' => 'dashicons-format-aside',
+            'slideshare' => 'dashicons-format-aside',
+            'smugmug' => 'dashicons-format-image',
+            'tumblr' => 'dashicons-tumblr',
+            'videopress' => 'dashicons-video-alt3',
+            'wordpress' => 'dashicons-wordpress',
+            'wordpress-tv' => 'dashicons-wordpress',
+            'animoto' => 'dashicons-video-alt3',
+            'cloudup' => 'dashicons-cloud',
+            'collegehumor' => 'dashicons-format-video',
+            'crowdsignal' => 'dashicons-chart-bar',
+            'issuu' => 'dashicons-format-aside',
+            'pinterest' => 'dashicons-pinterest',
+            'pocket-casts' => 'dashicons-microphone',
+            'wolfram' => 'dashicons-welcome-learn-more',
+            'bluesky' => 'dashicons-cloud',
+            'tiktok' => 'dashicons-video-alt3',
+        );
+
+        return isset($icons[$slug]) ? $icons[$slug] : 'dashicons-embed-generic';
+    }
+
+    /**
+     * Get a list of common oEmbed provider variations for the core/embed block
+     */
+    private function get_embed_variations() {
+        return array(
+            'youtube' => 'YouTube',
+            'vimeo' => 'Vimeo',
+            'facebook' => 'Facebook',
+            'twitter' => 'Twitter',
+            'instagram' => 'Instagram',
+            'soundcloud' => 'SoundCloud',
+            'spotify' => 'Spotify',
+            'flickr' => 'Flickr',
+            'imgur' => 'Imgur',
+            'dailymotion' => 'Dailymotion',
+            'ted' => 'TED',
+            'kickstarter' => 'Kickstarter',
+            'meetup-com' => 'Meetup.com',
+            'mixcloud' => 'Mixcloud',
+            'reddit' => 'Reddit',
+            'reverbnation' => 'ReverbNation',
+            'screencast' => 'Screencast',
+            'scribd' => 'Scribd',
+            'slideshare' => 'Slideshare',
+            'smugmug' => 'SmugMug',
+            'tumblr' => 'Tumblr',
+            'videopress' => 'VideoPress',
+            'wordpress' => 'WordPress',
+            'wordpress-tv' => 'WordPress.tv',
+            'animoto' => 'Animoto',
+            'cloudup' => 'Cloudup',
+            'collegehumor' => 'CollegeHumor',
+            'crowdsignal' => 'Crowdsignal',
+            'issuu' => 'Issuu',
+            'pinterest' => 'Pinterest',
+            'pocket-casts' => 'Pocket Casts',
+            'wolfram' => 'Wolfram',
+            'bluesky' => 'Bluesky',
+            'tiktok' => 'TikTok',
+        );
     }
 
     /**
@@ -216,7 +313,18 @@ class WP_Blocks_To_Category {
         foreach ($registered_blocks as $block_name => $block_type) {
             $blocks[] = array(
                 'name' => $block_name,
-                'title' => isset($block_type->title) ? $block_type->title : $block_name
+                'title' => isset($block_type->title) ? $block_type->title : $block_name,
+                'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
+            );
+        }
+
+        // Add embed variations
+        $embed_variations = $this->get_embed_variations();
+        foreach ($embed_variations as $variation_slug => $variation_name) {
+            $blocks[] = array(
+                'name' => 'core/embed:' . $variation_slug,
+                'title' => $variation_name . ' Embed',
+                'icon' => $this->get_embed_variation_icon($variation_slug)
             );
         }
 
@@ -252,8 +360,17 @@ class WP_Blocks_To_Category {
         $block_names = array();
 
         foreach ($blocks as $block) {
-            if (!empty($block['blockName'])) {
-                $block_names[] = $block['blockName'];
+            if (empty($block['blockName'])) {
+                continue;
+            }
+
+            $block_name = $block['blockName'];
+
+            // Handle core/embed variations
+            if ($block_name === 'core/embed' && !empty($block['attrs']['providerNameSlug'])) {
+                $block_names[] = 'core/embed:' . $block['attrs']['providerNameSlug'];
+            } else {
+                $block_names[] = $block_name;
             }
 
             // Check for inner blocks

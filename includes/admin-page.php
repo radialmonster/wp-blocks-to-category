@@ -80,7 +80,8 @@ if (!defined('ABSPATH')) {
                             foreach ($registered_blocks as $block_name => $block_type) {
                                 $blocks_array[] = array(
                                     'name' => $block_name,
-                                    'title' => isset($block_type->title) ? $block_type->title : $block_name
+                                    'title' => isset($block_type->title) ? $block_type->title : $block_name,
+                                    'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
                                 );
                             }
 
@@ -91,12 +92,17 @@ if (!defined('ABSPATH')) {
                             foreach ($blocks_array as $block) :
                                 $block_name = $block['name'];
                                 $block_title = $block['title'];
+                                $block_icon = $block['icon'];
                                 $assigned_categories = isset($mappings[$block_name]) ? $mappings[$block_name] : array();
                             ?>
                                 <tr class="wpbtc-mapping-row" data-block-name="<?php echo esc_attr($block_name); ?>" data-block-title="<?php echo esc_attr($block_title); ?>">
                                     <td class="wpbtc-col-block">
                                         <div class="wpbtc-block-icon">
-                                            <span class="dashicons dashicons-block-default"></span>
+                                            <?php if (strpos($block_icon, '<svg') === 0) : ?>
+                                                <?php echo $block_icon; ?>
+                                            <?php else : ?>
+                                                <span class="dashicons <?php echo esc_attr($block_icon); ?>"></span>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                     <td class="wpbtc-col-name">
