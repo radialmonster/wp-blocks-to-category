@@ -8,10 +8,6 @@
     $(document).ready(function() {
         // Initialize the admin page
         WPBTC_Admin.init();
-
-        wp.domReady(function() {
-            WPBTC_Admin.loadBlockIcons();
-        });
     });
 
     var WPBTC_Admin = {
@@ -20,50 +16,6 @@
          */
         init: function() {
             this.bindEvents();
-            this.loadBlockIcons();
-        },
-
-        /**
-         * Load block icons using @wordpress/blocks
-         */
-        loadBlockIcons: function() {
-            var blocks = wp.blocks.getBlockTypes();
-
-            $('.wpbtc-mapping-row').each(function() {
-                var blockName = $(this).data('block-name');
-                var block = blocks.find(function(b) {
-                    return b.name === blockName;
-                });
-
-                if (block && block.icon) {
-                    var $iconContainer = $(this).find('.wpbtc-block-icon');
-                    var icon = block.icon;
-
-                    if (typeof icon === 'string') {
-                        if (icon.startsWith('<')) {
-                            $iconContainer.html(icon);
-                        } else {
-                            $iconContainer.html('<span class="dashicons ' + icon + '"></span>');
-                        }
-                    } else if (typeof icon === 'object' && icon.src) {
-                        if (typeof icon.src === 'string') {
-                            if (icon.src.startsWith('<')) {
-                                $iconContainer.html(icon.src);
-                            } else {
-                                $iconContainer.html('<span class="dashicons ' + icon.src + '"></span>');
-                            }
-                        } else if (typeof icon.src === 'function') {
-                            // This is a React component, we can't render it directly.
-                            // We will just use the default icon.
-                            $iconContainer.html('<span class="dashicons dashicons-block-default"></span>');
-                        }
-                    } else if (typeof icon === 'function') {
-                        // This is a React component, we can't render it directly.
-                        // We will just use the default icon.
-                        $iconContainer.html('<span class="dashicons dashicons-block-default"></span>');
-                    }
-                }
-            });
         },
 
         /**

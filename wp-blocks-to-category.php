@@ -138,7 +138,7 @@ class WP_Blocks_To_Category {
         wp_enqueue_script(
             'wpbtc-admin-script',
             WPBTC_PLUGIN_URL . 'assets/js/admin.js',
-            array('jquery', 'wp-blocks'),
+            array('jquery'),
             WPBTC_VERSION,
             true
         );
@@ -167,24 +167,13 @@ class WP_Blocks_To_Category {
         // Get all registered blocks
         $registered_blocks = WP_Block_Type_Registry::get_instance()->get_all_registered();
 
-        $blocks_for_page = array();
-
-        foreach ($registered_blocks as $block_name => $block_type) {
-            $blocks_for_page[] = array(
-                'name' => $block_name,
-                'title' => isset($block_type->title) ? $block_type->title : $block_name,
-                'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
-            );
-        }
-
         // Add embed variations
         $embed_variations = $this->get_embed_variations();
         foreach ($embed_variations as $variation_slug => $variation_name) {
             $block_name = 'core/embed:' . $variation_slug;
-            $blocks_for_page[] = array(
+            $registered_blocks[$block_name] = (object) array(
                 'name' => $block_name,
-                'title' => $variation_name . ' Embed',
-                'icon' => $this->get_embed_variation_icon($variation_slug)
+                'title' => $variation_name . ' Embed'
             );
         }
 
@@ -195,56 +184,7 @@ class WP_Blocks_To_Category {
             'order' => 'ASC'
         ));
 
-        // Sort blocks by name
-        usort($blocks_for_page, function($a, $b) {
-            return strcmp($a['name'], $b['name']);
-        });
-
         include WPBTC_PLUGIN_DIR . 'includes/admin-page.php';
-    }
-
-    /**
-     * Get the icon for a specific embed variation
-     */
-    private function get_embed_variation_icon($slug) {
-        $icons = array(
-            'youtube' => 'dashicons-youtube',
-            'vimeo' => 'dashicons-vimeo',
-            'facebook' => 'dashicons-facebook',
-            'twitter' => 'dashicons-twitter',
-            'instagram' => 'dashicons-instagram',
-            'soundcloud' => 'dashicons-soundcloud',
-            'spotify' => 'dashicons-spotify',
-            'flickr' => 'dashicons-format-image',
-            'imgur' => 'dashicons-format-image',
-            'dailymotion' => 'dashicons-video-alt3',
-            'ted' => 'dashicons-video-alt3',
-            'kickstarter' => 'dashicons-megaphone',
-            'meetup-com' => 'dashicons-groups',
-            'mixcloud' => 'dashicons-playlist-audio',
-            'reddit' => 'dashicons-reddit',
-            'reverbnation' => 'dashicons-format-audio',
-            'screencast' => 'dashicons-video-alt3',
-            'scribd' => 'dashicons-format-aside',
-            'slideshare' => 'dashicons-format-aside',
-            'smugmug' => 'dashicons-format-image',
-            'tumblr' => 'dashicons-tumblr',
-            'videopress' => 'dashicons-video-alt3',
-            'wordpress' => 'dashicons-wordpress',
-            'wordpress-tv' => 'dashicons-wordpress',
-            'animoto' => 'dashicons-video-alt3',
-            'cloudup' => 'dashicons-cloud',
-            'collegehumor' => 'dashicons-format-video',
-            'crowdsignal' => 'dashicons-chart-bar',
-            'issuu' => 'dashicons-format-aside',
-            'pinterest' => 'dashicons-pinterest',
-            'pocket-casts' => 'dashicons-microphone',
-            'wolfram' => 'dashicons-welcome-learn-more',
-            'bluesky' => 'dashicons-cloud',
-            'tiktok' => 'dashicons-video-alt3',
-        );
-
-        return isset($icons[$slug]) ? $icons[$slug] : 'dashicons-embed-generic';
     }
 
     /**
@@ -328,8 +268,7 @@ class WP_Blocks_To_Category {
         foreach ($registered_blocks as $block_name => $block_type) {
             $blocks[] = array(
                 'name' => $block_name,
-                'title' => isset($block_type->title) ? $block_type->title : $block_name,
-                'icon' => isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default'
+                'title' => isset($block_type->title) ? $block_type->title : $block_name
             );
         }
 
@@ -338,8 +277,7 @@ class WP_Blocks_To_Category {
         foreach ($embed_variations as $variation_slug => $variation_name) {
             $blocks[] = array(
                 'name' => 'core/embed:' . $variation_slug,
-                'title' => $variation_name . ' Embed',
-                'icon' => $this->get_embed_variation_icon($variation_slug)
+                'title' => $variation_name . ' Embed'
             );
         }
 

@@ -75,20 +75,28 @@ if (!defined('ABSPATH')) {
                         </thead>
                         <tbody id="wpbtc-mappings-tbody">
                             <?php
-                            foreach ($blocks_for_page as $block) :
+                            // Sort blocks by name
+                            $blocks_array = array();
+                            foreach ($registered_blocks as $block_name => $block_type) {
+                                $blocks_array[] = array(
+                                    'name' => $block_name,
+                                    'title' => isset($block_type->title) ? $block_type->title : $block_name
+                                );
+                            }
+
+                            usort($blocks_array, function($a, $b) {
+                                return strcmp($a['name'], $b['name']);
+                            });
+
+                            foreach ($blocks_array as $block) :
                                 $block_name = $block['name'];
                                 $block_title = $block['title'];
-                                $block_icon = $block['icon'];
                                 $assigned_categories = isset($mappings[$block_name]) ? $mappings[$block_name] : array();
                             ?>
                                 <tr class="wpbtc-mapping-row" data-block-name="<?php echo esc_attr($block_name); ?>" data-block-title="<?php echo esc_attr($block_title); ?>">
                                     <td class="wpbtc-col-block">
                                         <div class="wpbtc-block-icon">
-                                            <?php if (strpos($block_icon, '<svg') === 0) : ?>
-                                                <?php echo $block_icon; ?>
-                                            <?php else : ?>
-                                                <span class="dashicons <?php echo esc_attr($block_icon); ?>"></span>
-                                            <?php endif; ?>
+                                            <span class="dashicons dashicons-block-default"></span>
                                         </div>
                                     </td>
                                     <td class="wpbtc-col-name">
