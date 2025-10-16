@@ -167,6 +167,10 @@ class WP_Blocks_To_Category {
         // Get all registered blocks
         $registered_blocks = WP_Block_Type_Registry::get_instance()->get_all_registered();
 
+        foreach ($registered_blocks as $block_name => $block_type) {
+            $block_type->icon = isset($block_type->icon) ? $block_type->icon : 'dashicons-block-default';
+        }
+
         // Add embed variations
         $embed_variations = $this->get_embed_variations();
         foreach ($embed_variations as $variation_slug => $variation_name) {
