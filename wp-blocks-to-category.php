@@ -184,6 +184,9 @@ class WP_Blocks_To_Category {
             'order' => 'ASC'
         ));
 
+        // Sort mappings alphabetically by block name
+        uksort($mappings, 'strnatcasecmp');
+
         include WPBTC_PLUGIN_DIR . 'includes/admin-page.php';
     }
 
