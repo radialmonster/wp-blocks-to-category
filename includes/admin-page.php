@@ -75,12 +75,22 @@ if (!defined('ABSPATH')) {
                         </thead>
                         <tbody id="wpbtc-mappings-tbody">
                             <?php
-                            // Sort blocks by name
+                            // Sort blocks by title
                             $blocks_array = array();
                             foreach ($registered_blocks as $block_name => $block_type) {
+                                // Get title or create a fallback from the last part of the slug
+                                if (isset($block_type->title) && !empty($block_type->title)) {
+                                    $title = $block_type->title;
+                                } else {
+                                    // Extract the last part after the slash and convert to title case
+                                    $slug_parts = explode('/', $block_name);
+                                    $last_part = end($slug_parts);
+                                    $title = ucwords(str_replace(array('-', '_'), ' ', $last_part));
+                                }
+
                                 $blocks_array[] = array(
                                     'name' => $block_name,
-                                    'title' => isset($block_type->title) ? $block_type->title : $block_name
+                                    'title' => $title
                                 );
                             }
 
