@@ -8,6 +8,10 @@
     $(document).ready(function() {
         // Initialize the admin page
         WPBTC_Admin.init();
+
+        wp.domReady(function() {
+            WPBTC_Admin.loadBlockIcons();
+        });
     });
 
     var WPBTC_Admin = {
